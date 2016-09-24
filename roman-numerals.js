@@ -46,7 +46,7 @@ RomanNumber.prototype.toString = function () {
   return this.stringValue;
 };
 
-RomanNumber.numerals = [
+RomanNumber.NUMERALS = [
   { symbol: "M", value: 1000 },
   { symbol: "CM", value: 900 },
   { symbol: "D", value: 500 },
@@ -62,14 +62,25 @@ RomanNumber.numerals = [
   { symbol: "I", value: 1 }
 ];
 
+RomanNumber.FORMAT = new RegExp("^" +
+    "M{0,3}" + // thousands
+    "(C{0,3}|CD|DC{0,3}|CM)" + // hundreds
+    "(X{0,3}|XL|LX{0,3}|XC)" + // tens
+    "(I{0,3}|IV|VI{0,3}|IX)" + // units
+  "$");
+
+RomanNumber.MIN = 1;
+
+RomanNumber.MAX = 3999;
+
 RomanNumber.stringFromInteger = function (intValue) {
-  if (intValue < 1 || intValue > 3999) {
+  if (intValue < RomanNumber.MIN || intValue > RomanNumber.MAX) {
     throw new Error("invalid range");
   }
 
   var remainingIntValue = intValue, stringValue = "";
 
-  RomanNumber.numerals.forEach(function (numeral) {
+  RomanNumber.NUMERALS.forEach(function (numeral) {
 
     var quotient = Math.floor(remainingIntValue / numeral.value);
 
@@ -86,7 +97,7 @@ RomanNumber.stringFromInteger = function (intValue) {
 };
 
 RomanNumber.integerFromString = function (stringValue) {
-  if (!/^[MDCLXVI]+$/.test(stringValue)) {
+  if (!RomanNumber.FORMAT.test(stringValue)) {
     throw new Error("invalid value");
   }
 
@@ -94,7 +105,7 @@ RomanNumber.integerFromString = function (stringValue) {
 
   while (remainingStringValue.length > 0) {
 
-    RomanNumber.numerals.forEach(function (numeral) {
+    RomanNumber.NUMERALS.forEach(function (numeral) {
       var head, tail;
 
       head = remainingStringValue.substring(0, numeral.symbol.length);
@@ -139,7 +150,20 @@ assert(RomanNumber(10) instanceof RomanNumber);
 });
 
 // Check for invalid string formats
-["error", "iv", "CD1X"].forEach(function (invalidValue) {
+[
+  // invalid characters
+  "error",
+  "iv",
+  "CD1X",
+  // invalid symbol order
+  "XMI",
+  "MCMVVL",
+  "DCDC",
+  "VIVIVI",
+  // invalid number of symbol repetition
+  "MMMMCIX",
+  "MCMLLLLII"
+].forEach(function (invalidValue) {
   assert.throws(function () {
     new RomanNumber(invalidValue);
   }, /invalid value/);
