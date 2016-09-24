@@ -14,6 +14,17 @@ RomanNumber = function (value) {
     throw new Error("value required");
   }
 
+  function fromInteger(value) {
+    if (value < 1 || value > 3999) {
+      throw new Error("invalid range");
+    }
+  }
+
+  if (Number.isInteger(value)) {
+    this.intValue = value;
+    this.stringValue = fromInteger(value);
+  }
+
 };
 
 // Tests
@@ -26,4 +37,11 @@ assert(RomanNumber(10) instanceof RomanNumber);
   assert.throws(function () {
     new RomanNumber(emptyValue)
   }, /value required/);
-})
+});
+
+// Check for out of range values
+[0, 4000].forEach(function (outOfRangeValue) {
+  assert.throws(function () {
+    new RomanNumber(outOfRangeValue)
+  }, /invalid range/);
+});
