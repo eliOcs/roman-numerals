@@ -67,23 +67,22 @@ RomanNumber.stringFromInteger = function (intValue) {
     throw new Error("invalid range");
   }
 
-  return RomanNumber.numerals.reduce(function (result, numeral) {
-    var quotient;
+  var remainingIntValue = intValue, stringValue = "";
 
-    quotient = Math.floor(result.remainingValue / numeral.value);
+  RomanNumber.numerals.forEach(function (numeral) {
+
+    var quotient = Math.floor(remainingIntValue / numeral.value);
 
     if (quotient === 0) {
-      return result;
+      return;
     }
 
-    result.remainingValue %= numeral.value;
-    result.stringValue += repeatString(numeral.symbol, quotient);
+    remainingIntValue %= numeral.value;
+    stringValue += repeatString(numeral.symbol, quotient);
 
-    return result;
-  }, {
-    remainingValue: intValue,
-    stringValue: ""
-  }).stringValue;
+  });
+
+  return stringValue;
 };
 
 RomanNumber.integerFromString = function (stringValue) {
@@ -98,8 +97,8 @@ RomanNumber.integerFromString = function (stringValue) {
     RomanNumber.numerals.forEach(function (numeral) {
       var head, tail;
 
-      head = remainingStringValue.substring(0, numeral.symbol.length)
-      tail = remainingStringValue.substring(numeral.symbol.length)
+      head = remainingStringValue.substring(0, numeral.symbol.length);
+      tail = remainingStringValue.substring(numeral.symbol.length);
 
       if (numeral.symbol === head) {
         intValue += numeral.value;
