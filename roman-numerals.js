@@ -8,6 +8,10 @@ function isString(value) {
   return typeof value === "string" || value instanceof String;
 }
 
+function stringStartsWith(string, start) {
+  return string.substring(0, start.length) === start;
+}
+
 function repeatString(string, times) {
   var i, result = "";
   for (i = 0; i < times; i += 1) {
@@ -101,21 +105,17 @@ RomanNumber.integerFromString = function (stringValue) {
     throw new Error("invalid value");
   }
 
-  var intValue = 0, remainingStringValue = stringValue;
+  var intValue = 0, remainingStringValue = stringValue, matchingNumeral;
 
   while (remainingStringValue.length > 0) {
 
-    RomanNumber.NUMERALS.forEach(function (numeral) {
-      var head, tail;
-
-      head = remainingStringValue.substring(0, numeral.symbol.length);
-      tail = remainingStringValue.substring(numeral.symbol.length);
-
-      if (numeral.symbol === head) {
-        intValue += numeral.value;
-        remainingStringValue = tail;
-      }
+    matchingNumeral = RomanNumber.NUMERALS.find(function (numeral) {
+      return stringStartsWith(remainingStringValue, numeral.symbol);
     });
+
+    intValue += matchingNumeral.value;
+    remainingStringValue = remainingStringValue.
+      substring(matchingNumeral.symbol.length);
 
   }
 
