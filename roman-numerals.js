@@ -8,6 +8,14 @@ function isString(value) {
   return typeof value === "string" || value instanceof String;
 }
 
+function repeatString(string, times) {
+  var i, result = "";
+  for (i = 0; i < times; i += 1) {
+    result += string;
+  }
+  return result;
+}
+
 RomanNumber = function (value) {
 
   if (!(this instanceof RomanNumber)) {
@@ -51,31 +59,26 @@ RomanNumber.stringFromInteger = function (intValue) {
     throw new Error("invalid range");
   }
 
-  function repeatSymbol(symbol, times) {
-    var i, result = "";
-    for (i = 0; i < times; i += 1) {
-      result += symbol;
-    }
-    return result;
-  }
+  var currentRemainder = intValue;
 
   return RomanNumber.numerals.reduce(function (result, numeral) {
-    var quotient, remainder;
+    var quotient;
 
-    quotient = Math.floor(intValue / numeral.value);
-    remainder = intValue % numeral.value;
+    quotient = Math.floor(currentRemainder / numeral.value);
 
     if (quotient === 0) {
       return result;
     }
 
-    intValue = remainder;
-    return result + repeatSymbol(numeral.symbol, quotient);
+    currentRemainder %= numeral.value;
+    return result + repeatString(numeral.symbol, quotient);
   }, "");
 };
 
 RomanNumber.integerFromString = function (stringValue) {
-
+  if (!/^[MDCLXVI]+$/.test(stringValue)) {
+    throw new Error("invalid value");
+  }
 }
 
 RomanNumber.prototype.toInt = function () {
@@ -131,6 +134,13 @@ assert(RomanNumber(10) instanceof RomanNumber);
     new RomanNumber(valuePair.intValue).toString(),
     valuePair.stringValue
   );
+});
+
+// Check for invalid string formats
+["error", "iv", "CD1X"].forEach(function (invalidValue) {
+  assert.throws(function () {
+    new RomanNumber(invalidValue);
+  }, /invalid value/);
 });
 
 // Converting roman numerals into integers
