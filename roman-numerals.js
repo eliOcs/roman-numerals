@@ -10,9 +10,20 @@ RomanNumber = function (value) {
     return new RomanNumber(value);
   }
 
+  if (value === null || value === undefined || value === "") {
+    throw new Error("value required");
+  }
+
 };
 
 // Tests
 
 // Enforce new
-assert(RomanNumber() instanceof RomanNumber);
+assert(RomanNumber(10) instanceof RomanNumber);
+
+// Check for null, undefined and empty string
+[null, undefined, ""].forEach(function (emptyValue) {
+  assert.throws(function () {
+    new RomanNumber(emptyValue)
+  }, /value required/);
+})
