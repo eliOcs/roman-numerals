@@ -38,6 +38,14 @@ RomanNumber = function (value) {
 
 };
 
+RomanNumber.prototype.toInt = function () {
+  return this.intValue;
+};
+
+RomanNumber.prototype.toString = function () {
+  return this.stringValue;
+};
+
 RomanNumber.numerals = [
   { symbol: "M", value: 1000 },
   { symbol: "CM", value: 900 },
@@ -59,34 +67,49 @@ RomanNumber.stringFromInteger = function (intValue) {
     throw new Error("invalid range");
   }
 
-  var currentRemainder = intValue;
-
   return RomanNumber.numerals.reduce(function (result, numeral) {
     var quotient;
 
-    quotient = Math.floor(currentRemainder / numeral.value);
+    quotient = Math.floor(result.remainingValue / numeral.value);
 
     if (quotient === 0) {
       return result;
     }
 
-    currentRemainder %= numeral.value;
-    return result + repeatString(numeral.symbol, quotient);
-  }, "");
+    result.remainingValue %= numeral.value;
+    result.stringValue += repeatString(numeral.symbol, quotient);
+
+    return result;
+  }, {
+    remainingValue: intValue,
+    stringValue: ""
+  }).stringValue;
 };
 
 RomanNumber.integerFromString = function (stringValue) {
   if (!/^[MDCLXVI]+$/.test(stringValue)) {
     throw new Error("invalid value");
   }
-}
 
-RomanNumber.prototype.toInt = function () {
-  return this.intValue;
-};
+  var intValue = 0, remainingStringValue = stringValue;
 
-RomanNumber.prototype.toString = function () {
-  return this.stringValue;
+  while (remainingStringValue.length > 0) {
+
+    RomanNumber.numerals.forEach(function (numeral) {
+      var head, tail;
+
+      head = remainingStringValue.substring(0, numeral.symbol.length)
+      tail = remainingStringValue.substring(numeral.symbol.length)
+
+      if (numeral.symbol === head) {
+        intValue += numeral.value;
+        remainingStringValue = tail;
+      }
+    });
+
+  }
+
+  return intValue;
 };
 
 
@@ -116,7 +139,14 @@ assert(RomanNumber(10) instanceof RomanNumber);
   }, /invalid range/);
 });
 
-// Converting integers into roman numerals
+// Check for invalid string formats
+["error", "iv", "CD1X"].forEach(function (invalidValue) {
+  assert.throws(function () {
+    new RomanNumber(invalidValue);
+  }, /invalid value/);
+});
+
+// Converting between integers and roman numerals
 [
   { intValue: 1, stringValue: "I" },
   { intValue: 3, stringValue: "III" },
@@ -134,13 +164,9 @@ assert(RomanNumber(10) instanceof RomanNumber);
     new RomanNumber(valuePair.intValue).toString(),
     valuePair.stringValue
   );
-});
 
-// Check for invalid string formats
-["error", "iv", "CD1X"].forEach(function (invalidValue) {
-  assert.throws(function () {
-    new RomanNumber(invalidValue);
-  }, /invalid value/);
+  assert.equal(
+    new RomanNumber(valuePair.stringValue).toInt(),
+    valuePair.intValue
+  );
 });
-
-// Converting roman numerals into integers
