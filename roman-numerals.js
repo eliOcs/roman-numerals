@@ -4,6 +4,10 @@
 var assert = require("assert"),
   RomanNumber;
 
+function isString(value) {
+  return typeof value === "string" || value instanceof String;
+}
+
 RomanNumber = function (value) {
 
   if (!(this instanceof RomanNumber)) {
@@ -16,7 +20,12 @@ RomanNumber = function (value) {
 
   if (Number.isInteger(value)) {
     this.intValue = value;
-    this.stringValue = RomanNumber.fromInteger(value);
+    this.stringValue = RomanNumber.stringFromInteger(value);
+  } else if (isString(value)) {
+    this.intValue = RomanNumber.integerFromString(value);
+    this.stringValue = value;
+  } else {
+    throw new Error("invalid value");
   }
 
 };
@@ -37,8 +46,8 @@ RomanNumber.numerals = [
   { symbol: "I", value: 1 }
 ];
 
-RomanNumber.fromInteger = function (value) {
-  if (value < 1 || value > 3999) {
+RomanNumber.stringFromInteger = function (intValue) {
+  if (intValue < 1 || intValue > 3999) {
     throw new Error("invalid range");
   }
 
@@ -53,17 +62,21 @@ RomanNumber.fromInteger = function (value) {
   return RomanNumber.numerals.reduce(function (result, numeral) {
     var quotient, remainder;
 
-    quotient = Math.floor(value / numeral.value);
-    remainder = value % numeral.value;
+    quotient = Math.floor(intValue / numeral.value);
+    remainder = intValue % numeral.value;
 
     if (quotient === 0) {
       return result;
     }
 
-    value = remainder;
+    intValue = remainder;
     return result + repeatSymbol(numeral.symbol, quotient);
   }, "");
 };
+
+RomanNumber.integerFromString = function (stringValue) {
+
+}
 
 RomanNumber.prototype.toInt = function () {
   return this.intValue;
@@ -84,6 +97,13 @@ assert(RomanNumber(10) instanceof RomanNumber);
   assert.throws(function () {
     new RomanNumber(emptyValue);
   }, /value required/);
+});
+
+// Check for invalid types
+[1.3, false, [1, 2, 3], {}].forEach(function (invalidValue) {
+  assert.throws(function () {
+    new RomanNumber(invalidValue);
+  }, /invalid value/);
 });
 
 // Check for out of range values
@@ -112,3 +132,5 @@ assert(RomanNumber(10) instanceof RomanNumber);
     valuePair.stringValue
   );
 });
+
+// Converting roman numerals into integers
